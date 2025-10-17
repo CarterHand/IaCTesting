@@ -3,24 +3,34 @@ name: Codacy Analysis
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   codacy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Codacy Analysis CLI
-        uses: codacy/codacy-analysis-cli-action@v4.3.0
+      - name: Run Codacy Analysis CLI (docker)
+        uses: docker://ghcr.io/codacy/codacy-analysis-cli:latest
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
         with:
-          api-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          upload: true
-          format: sarif
-          output: results.sarif
+          args: >
+            analyze
+            --directory .
+            --format sarif
+            --output results.sarif
+            --allow-network
+            --verbose
 
-      - name: Upload SARIF results to GitHub
+      - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results.sarif
+
