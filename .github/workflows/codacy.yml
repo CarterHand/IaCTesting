@@ -1,0 +1,26 @@
+name: Codacy Analysis
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  codacy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Codacy Analysis CLI
+        uses: codacy/codacy-analysis-cli-action@v6
+        with:
+          api-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          upload: true
+          format: sarif
+          output: results.sarif
+
+      - name: Upload SARIF results to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
