@@ -13,21 +13,22 @@ jobs:
       security-events: write
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Codacy Analysis CLI (docker)
-        uses: docker://ghcr.io/codacy/codacy-analysis-cli:latest
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Codacy CLI
+        run: npm install -g @codacy/cli
+
+      - name: Run Codacy Analysis
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        with:
-          args: >
-            analyze
-            --directory .
-            --format sarif
-            --output results.sarif
-            --allow-network
-            --verbose
+        run: |
+          codacy analyze --directory . --format sarif --output results.sarif --verbose
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
